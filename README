@@ -1,0 +1,15 @@
+*Key
+>A line of code is presented like this: /code/
+
+I follow the following proceedure so far:
+
+1) Open the "truth-level" madgraph samples (before any simulation) in ROOT.For example;>Spin0m_MH125_011_ZZ_4l_8TeV_ahg3ahz3_v222_10.root
+       >Spin0p_MH125_011_ZZ_4l_8TeV_ahg1ahz1_v222_100.root
+
+2)Remember that the .lhe versions are converted to .root through the ExRootLHEFConverter in the ExRootAnalysis directory by doing /./ExRootLHEFConverter file_name.lhe file_name.root/ in terminal.
+
+3) Run the selector "Angles.C" by /LHEF->Process("Angles.C");/ in ROOT
+
+4)Produce a root file containing two trees, one for "Spin0m" and one for "Spin0p", with each tree with branches (variables) such as cth1, cth2, cthstr, phi,phi_1 etc and name this file as "____angles.root"
+
+5)Run TMVAClassification.C with "____angles.root" as input file and produce plots to differentiate between Spin0p (Signal) vs Spin0m (Background) using TMVA macros. An output file is also created which I currently do not know how to use to get the aforementioned plots/analysis.
