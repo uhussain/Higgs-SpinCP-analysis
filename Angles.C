@@ -151,7 +151,30 @@ Bool_t Angles::Process(Long64_t entry)
    TLorentzVector l2(Particle_Px[6],Particle_Py[6],Particle_Pz[6],Particle_E[6]);
    TLorentzVector l3(Particle_Px[7],Particle_Py[7],Particle_Pz[7],Particle_E[7]);
    TLorentzVector l4(Particle_Px[8],Particle_Py[8],Particle_Pz[8],Particle_E[8]);
-  
+   
+   //Calculating transverse energy of the leptons
+   Float_t l1_Et = sqrt(pow(Particle_M[5],2.0)+pow(Particle_PT[5],2.0));
+   Float_t l2_Et = sqrt(pow(Particle_M[6],2.0)+pow(Particle_PT[6],2.0));
+   Float_t l3_Et = sqrt(pow(Particle_M[7],2.0)+pow(Particle_PT[7],2.0));
+   Float_t l4_Et = sqrt(pow(Particle_M[8],2.0)+pow(Particle_PT[8],2.0));
+   
+   //Calculating dR for pairs of leptons where particle[5] is lepton#1 and so on until particle[8] is lepton#4
+   Float_t dR_12 = sqrt(((Particle_Phi[5]-Particle_Phi[6])**2)+((Particle_Eta[5]-Particle_Eta[6])**2));
+   Float_t dR_13 = sqrt(((Particle_Phi[5]-Particle_Phi[7])**2)+((Particle_Eta[5]-Particle_Eta[7])**2));
+   Float_t dR_14 = sqrt(((Particle_Phi[5]-Particle_Phi[8])**2)+((Particle_Eta[5]-Particle_Eta[8])**2));
+   Float_t dR_23 = sqrt(((Particle_Phi[6]-Particle_Phi[7])**2)+((Particle_Eta[6]-Particle_Eta[7])**2));
+   Float_t dR_24 = sqrt(((Particle_Phi[6]-Particle_Phi[8])**2)+((Particle_Eta[6]-Particle_Eta[8])**2));
+   Float_t dR_34 = sqrt(((Particle_Phi[7]-Particle_Phi[8])**2)+((Particle_Eta[7]-Particle_Eta[8])**2));
+   
+   //Define x,y to be used below
+   int x;
+   int y;
+   //Defining local variables x and y depedning on the identity of each of the leptons
+   if ((Particle_PID[5] = 11)||(Particle_PID[5] = -11)){x=0;}
+   if ((Particle_PID[5] = 13)||(Particle_PID[5] = -13)){x=1;}//if l1 is Z1/Z2 particle/antiparticle then l2 is Z1/Z2 antiparticle/particle
+   if ((Particle_PID[7] = 11)||(Particle_PID[7] = -11)){y=0;}
+   if ((Particle_PID[7] = 13)||(Particle_PID[7] = -13)){y=1;}//if l3 is Z1/Z2 particle/antiparticle then l2 is Z1/Z2 antiparticle/particle
+   
    //Declaring Variables to be used in methods below
    //Float_t cstheta;
    //Float_t cstheta_1;
@@ -160,6 +183,8 @@ Bool_t Angles::Process(Long64_t entry)
    //Float_t phi_1;
    //Float_t psi;
    Float_t s;
+   Float_t m4l;
+   Float_t m;
   // Float_t m1;
   // Float_t m2;  
    
@@ -170,23 +195,48 @@ Bool_t Angles::Process(Long64_t entry)
    //calculating the invariant mass of both pairs
    m12 = sqrt(((p_1.E())**2) - ((p_1.Px())**2)- ((p_1.Py())**2)- ((p_1.Pz())**2));
    m34 = sqrt(((p_2.E())**2) - ((p_2.Px())**2)- ((p_2.Py())**2)- ((p_2.Pz())**2));
+   m4l = (m12 + m34) ;
    s =(m12-mz);
+   //Define m which is used below://done in else statement below  m = 12 + 0.76*(m4l - 140)
+   //'m' increases linearly from 12 GeV (for m4l<140 GeV) to 50 GeV (for m4l > 190 GeV).
+   if (m4l < 140){m = 12;}
+   else if (m4l > 190) {(m = 50);
+   cout << "Linear m"<<endl;}
+   //Write a linear equation for 'm' in this else statement.
+   else {(m = 12 + 0.76*(m4l - 140));
+   cout << "Linear m"<<endl ;
+} 
+   //Skip events which don't satisfy: m12 > 5 GeV & m34 > 5 GeV
+   //And skip those which don't satisfy: dR > 0.1 for same flavor leptons. And lepton 1 & 2 are of the same flavor as are lepton 3 & 4
+   if ((m12>5)&&(m34>5)&&(dR_12>0.1)&&(dR_34>0.1)){
    //Deciding if pair1 is closer to MZ = 91.6 or pair2
-    if((m12-mz) < (m34-mz)){
+   if((m12-mz) < (m34-mz)){
+   // 50 GeV < m12 < 106 GeV for leading di-lepton pair
+   // m < m34 < 115 GeV where 'm' increases linearly 
+   //from 12 GeV (for m4l<140 GeV) to 50 GeV (for m4l > 190 GeV).
+   if ((50<m12<106)&&(m<m34<115)){
     GetHelicityAngles(l1,l2,l3,l4,&cthstr, &phi1,
-                       &cth1, &cth2, &phi);
+                       &cth1, &cth2, &phi);}
+   else{
+}
    
    //TLorentzVector Z1 = (l1+l2);
    //TLorentzVector Z2 = (l3+l4);
 }
-    else{
+   else{
+   // m34 is the leading di-lepton pair here  since m34 is closer to mz
+   if ((50<m34<106)&&(m<m12<115)){
     GetHelicityAngles(l3,l4,l1,l2,&cthstr, &phi1,
-                       &cth1, &cth2, &phi);
+                       &cth1, &cth2, &phi);}
+   else{
+}
 
    // TLorentzVector Z1 = (l3+l4);
    // TLorentzVector Z2 = (l1+l2);
 
-} 
+}}
+   else{
+}
 
 
       Double_t scale; 
@@ -205,9 +255,26 @@ Bool_t Angles::Process(Long64_t entry)
      // cout <<"where is the error?"<<endl;
   
  //Cuts on lepton acceptance
-    if ((Particle_Eta[5]>3) || (Particle_Eta[6]>3) || (Particle_Eta[7]>3) || (Particle_Eta[8]>3)){
+    if (((Particle_Eta[5]>3) || (Particle_Eta[6]>3) || (Particle_Eta[7]>3) || (Particle_Eta[8]>3))||((Particle_PT[5]<=20)||(Particle_PT[6]<=15)||(Particle_PT[7]<=10))){
+}   
+    //Eta & Transverse energy cuts on leptons specifically electrons
+    else if (((Particle_PID[5] = -11)||(Particle_PID[5] = 11))&&((Particle_Eta[5]>2.47)||(l1_Et<7))){}//condition for cuts on each electron
+    else if (((Particle_PID[6] = -11)||(Particle_PID[6] = 11))&&((Particle_Eta[6]>2.47)||(l2_Et<7))){}
+    else if (((Particle_PID[7] = -11)||(Particle_PID[7] = 11))&&((Particle_Eta[7]>2.47)||(l3_Et<7))){}
+    else if (((Particle_PID[8] = -11)||(Particle_PID[8] = 11))&&((Particle_Eta[8]>2.47)||(l4_Et<7))){}
 
-}	
+    //Eta & PT energy cuts on leptons specifically muons
+    else if(((Particle_PID[5] = -13)||(Particle_PID[5] = 13))&&((Particle_Eta[5]>2.7)||(Particle_PT[5]<6))){} //condition for cuts on each muon
+    else if(((Particle_PID[6] = -13)||(Particle_PID[6] = 13))&&((Particle_Eta[6]>2.7)||(Particle_PT[6]<6))){}
+    else if(((Particle_PID[7] = -13)||(Particle_PID[7] = 13))&&((Particle_Eta[7]>2.7)||(Particle_PT[7]<6))){}
+    else if(((Particle_PID[8] = -13)||(Particle_PID[8] = 13))&&((Particle_Eta[8]>2.7)||(Particle_PT[8]<6))){}
+    
+    //dR checks for same flavor and different flavor leptons
+    else if (((x==0)&&(y==0))&&((dR_13<0.1)||(dR_23<0.1)||(dR_14<0.1)||(dR_24<0.1))){}//this is the 4e case so all leptons of same flavor
+    else if (((x==0)&&(y==1))&&((dR_13<0.2)||(dR_23<0.2)||(dR_14<0.2)||(dR_24<0.2))){}//this is the 2e2mu case
+    else if (((x==1)&&(y==0))&&((dR_13<0.2)||(dR_23<0.2)||(dR_14<0.2)||(dR_24<0.2))){}//this is the 2mu2e case
+    else if (((x==1)&&(y==1))&&((dR_13<0.1)||(dR_23<0.1)||(dR_14<0.1)||(dR_24<0.1))){}//this is the 4mu case  	
+    
     else{
        Spin_0m->Fill();
 }
