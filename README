@@ -12,4 +12,7 @@ I follow the following proceedure so far:
 
 4)Produce a root file containing two trees, one for "Spin0m" and one for "Spin0p", with each tree with branches (variables) such as cth1, cth2, cthstr, phi,phi_1 etc and name this file as "____angles.root"
 
-5)Run TMVAClassification.C with "____angles.root" as input file and produce plots to differentiate between Spin0p (Signal) vs Spin0m (Background) using TMVA macros. An output file is also created which I currently do not know how to use to get the aforementioned plots/analysis.
+5)Run TMVAClassification.C with "____angles.root" as input file and produce plots to differentiate between Spin0p (Signal) vs Spin0m (Background) using TMVA macros.
+
+6) An output root file (TMVA_0p_0m.root) is also created from which the TMVA plots can be viewed anytime by launching
+the macro using the following command in root: .x TMVAGui.C("TMVA_0p_0m.root");
